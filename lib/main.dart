@@ -119,6 +119,7 @@ class _MyAppState extends State<MyApp> {
                               padding: EdgeInsets.all(8),
                               decoration: BoxDecoration(),
                               child: TextField(
+                                obscureText: true,
                                 decoration: InputDecoration(
                                     border: InputBorder.none,
                                     hintText: 'Password',
