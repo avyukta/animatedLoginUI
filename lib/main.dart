@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:loginanimation/fadeAnimation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:loginanimation/homepage.dart';
 
 void main() => runApp(MyApp());
 
@@ -9,6 +11,8 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  String _email, _password;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -102,11 +106,15 @@ class _MyAppState extends State<MyApp> {
                                 offset: Offset(0, 10))
                           ],
                         ),
-                        child: Column(
-                          children: <Widget>[
-                            Container(
-                              padding: EdgeInsets.all(8),
-                              child: TextField(
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            children: <Widget>[
+                              TextFormField(
+                                validator: (input) => input.isEmpty
+                                    ? 'Please enter an email'
+                                    : null,
+                                onSaved: (input) => _email = input,
                                 decoration: InputDecoration(
                                     border: InputBorder.none,
                                     hintText: 'Email or Phone',
@@ -114,12 +122,12 @@ class _MyAppState extends State<MyApp> {
                                         color: Colors.grey[400],
                                         fontWeight: FontWeight.bold)),
                               ),
-                            ),
-                            Container(
-                              padding: EdgeInsets.all(8),
-                              decoration: BoxDecoration(),
-                              child: TextField(
+                              TextFormField(
+                                validator: (input) => input.length < 6
+                                    ? 'Must enter 6 character'
+                                    : null,
                                 obscureText: true,
+                                onSaved: (input) => _password = input,
                                 decoration: InputDecoration(
                                     border: InputBorder.none,
                                     hintText: 'Password',
@@ -127,8 +135,8 @@ class _MyAppState extends State<MyApp> {
                                         color: Colors.grey[400],
                                         fontWeight: FontWeight.bold)),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     )),
@@ -141,7 +149,7 @@ class _MyAppState extends State<MyApp> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 30.0),
                       child: RaisedButton(
-                        onPressed: () {},
+                        onPressed: signIn,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(60)),
                         padding: EdgeInsets.all(0),
@@ -189,5 +197,22 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
     );
+  }
+
+  Future<void> signIn() async {
+    final formState = _formKey.currentState;
+    if (formState.validate()) {
+      formState.save();
+      try {
+        AuthResult user = await FirebaseAuth.instance
+            .signInWithEmailAndPassword(email: _email, password: _password);
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => HomePage()));
+        print(_email);
+        print(_password);
+      } catch (e) {
+        print(e.message);
+      }
+    }
   }
 }
